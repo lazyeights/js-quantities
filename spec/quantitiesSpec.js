@@ -115,6 +115,16 @@ describe("js-quantities", function() {
       expect(qty.denominator).toEqual(["<1>"]);
     });
 
+    it("should create pressure units in term of height of water", function() {
+      var qty = Qty("1 inH2O");
+      expect(qty.scalar).toBe(1);
+      expect(qty.numerator).toEqual(["<inh2o>"]);
+
+      qty = Qty("1 cmH2O");
+      expect(qty.scalar).toBe(1);
+      expect(qty.numerator).toEqual(["<cmh2o>"]);
+    });
+
     it("should create with denominator", function() {
       var qty = Qty("1 m/s");
       expect(qty.scalar).toBe(1);
@@ -1216,8 +1226,69 @@ describe("js-quantities", function() {
 
   describe("Qty.getKinds", function() {
     it("should return an array of kind names", function() {
-      expect(Qty.getKinds()).toContain('resistance');
+      expect(Qty.getKinds()).toContain("resistance");
+    });
+    
+    it("should not contain duplicate kind names", function() {
+      var kinds = Qty.getKinds();
+      var map = {};
+      kinds.forEach(function(kind) {
+        map[kind] = 1;
+      });
+      expect(kinds.length).toEqual(Object.keys(map).length);
     });
   });
 
+  describe("information", function() {
+    describe("bits and bytes", function() {
+      it("should have 'information' as kind", function() {
+        expect(Qty("3 b").kind()).toBe("information");
+        expect(Qty("5 B").kind()).toBe("information");
+      });
+
+      it("could be pluralized", function() {
+        expect(Qty("3 bits").eq(Qty("3 b"))).toBe(true);
+        expect(Qty("5 bytes").eq(Qty("5 B"))).toBe(true);
+      });
+    });
+
+    describe("rate", function() {
+      it("should accept bps and Bps aliases", function() {
+        expect(Qty("3 bps").eq(Qty("3 b/s"))).toBe(true);
+        expect(Qty("5 Bps").eq(Qty("5 B/s"))).toBe(true);
+      });
+
+      it("should be parsed when prefixed", function() {
+        expect(Qty("3 kbps").eq(Qty("3 kb/s"))).toBe(true);
+        expect(Qty("5 MBps").eq(Qty("5 MB/s"))).toBe(true);
+      });
+
+      it("should have 'information_rate' as kind", function() {
+        expect(Qty("3 bps").kind()).toBe("information_rate");
+        expect(Qty("5 Bps").kind()).toBe("information_rate");
+      });
+    });
+  });
+
+  describe("non regression tests", function() {
+    describe("Wh (#38)", function() {
+      it("should be parsed", function() {
+        expect(Qty("Wh").eq(Qty("3600 J"))).toBe(true);
+      });
+
+      it("should be parsed when prefixed", function() {
+        expect(Qty("kWh").eq(Qty("1000 Wh"))).toBe(true);
+      });
+    });
+
+    describe("Ah (#25)", function() {
+      it("should be parsed", function() {
+        expect(Qty("Ah").eq(Qty("3600 C"))).toBe(true);
+      });
+
+      it("should be parsed when prefixed", function() {
+        expect(Qty("mAh").eq(Qty("3.6 C"))).toBe(true);
+      });
+    });
+  });
 });

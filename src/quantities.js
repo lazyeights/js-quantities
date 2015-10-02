@@ -89,8 +89,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
     /* mass */
     "<kilogram>" : [["kg","kilogram","kilograms"], 1.0, "mass", ["<kilogram>"]],
-    "<AMU>" : [["u","AMU","amu"], 6.0221415e26, "mass", ["<kilogram>"]],
-    "<dalton>" : [["Da","Dalton","Daltons","dalton","daltons"], 6.0221415e26, "mass", ["<kilogram>"]],
+    "<AMU>" : [["u","AMU","amu"], 1.660538921e-27, "mass", ["<kilogram>"]],
+    "<dalton>" : [["Da","Dalton","Daltons","dalton","daltons"], 1.660538921e-27, "mass", ["<kilogram>"]],
     "<slug>" : [["slug","slugs"], 14.5939029, "mass", ["<kilogram>"]],
     "<short-ton>" : [["tn","ton"], 907.18474, "mass", ["<kilogram>"]],
     "<metric-ton>":[["tonne"], 1000, "mass", ["<kilogram>"]],
@@ -114,7 +114,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     "<pint>":  [["pt","pint","pints"], 0.000473176475, "volume", ["<meter>","<meter>","<meter>"]],
     "<cup>":  [["cu","cup","cups"], 0.000236588238, "volume", ["<meter>","<meter>","<meter>"]],
     "<fluid-ounce>":  [["floz","fluid-ounce","fluid-ounces"], 2.95735297e-5, "volume", ["<meter>","<meter>","<meter>"]],
-    "<tablespoon>":  [["tbs","tablespoon","tablespoons"], 1.47867648e-5, "volume", ["<meter>","<meter>","<meter>"]],
+    "<tablespoon>":  [["tb", "tbs","tablespoon","tablespoons"], 1.47867648e-5, "volume", ["<meter>","<meter>","<meter>"]],
     "<teaspoon>":  [["tsp","teaspoon","teaspoons"], 4.92892161e-6, "volume", ["<meter>","<meter>","<meter>"]],
     "<bushel>":  [["bu","bsh","bushel","bushels"], 0.035239072, "volume", ["<meter>","<meter>","<meter>"]],
 
@@ -179,6 +179,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
     /* charge */
     "<coulomb>" :  [["C","coulomb","Coulomb"], 1.0, "charge", ["<ampere>","<second>"]],
+    "<Ah>" :  [["Ah"], 3600, "charge", ["<ampere>","<second>"]],
 
     /* current */
     "<ampere>"  :  [["A","Ampere","ampere","amp","amps"], 1.0, "current", ["<ampere>"]],
@@ -213,6 +214,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     "<calorie>" :  [["cal","calorie","calories"], 4.18400, "energy",["<meter>","<meter>","<kilogram>"], ["<second>","<second>"]],
     "<Calorie>" :  [["Cal","Calorie","Calories"], 4184.00, "energy",["<meter>","<meter>","<kilogram>"], ["<second>","<second>"]],
     "<therm-US>" : [["th","therm","therms","Therm"], 105480400, "energy",["<meter>","<meter>","<kilogram>"], ["<second>","<second>"]],
+    "<Wh>" : [["Wh"], 3600, "energy",["<meter>","<meter>","<kilogram>"], ["<second>","<second>"]],
 
     /* force */
     "<newton>"  : [["N","Newton","newton"], 1.0, "force", ["<kilogram>","<meter>"], ["<second>","<second>"]],
@@ -232,9 +234,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     "<rotation>" : [["rotation"], 2.0*Math.PI, "angle", ["<radian>"]],
     "<rpm>"   :[["rpm"], 2.0*Math.PI / 60.0, "angular_velocity", ["<radian>"], ["<second>"]],
 
-    /* memory */
-    "<byte>"  :[["B","byte"], 1.0, "memory", ["<byte>"]],
-    "<bit>"  :[["b","bit"], 0.125, "memory", ["<byte>"]],
+    /* information */
+    "<byte>"  :[["B","byte","bytes"], 1.0, "information", ["<byte>"]],
+    "<bit>"  :[["b","bit","bits"], 0.125, "information", ["<byte>"]],
+
+    /* information rate */
+    "<Bps>" : [["Bps"], 1.0, "information_rate", ["<byte>"], ["<second>"]],
+    "<bps>" : [["bps"], 0.125, "information_rate", ["<byte>"], ["<second>"]],
 
     /* currency */
     "<dollar>":[["USD","dollar"], 1.0, "currency", ["<dollar>"]],
@@ -299,10 +305,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
   var QTY_STRING = "(" + SIGNED_NUMBER + ")?" + "\\s*([^/]*)(?:\/(.+))?";
   var QTY_STRING_REGEX = new RegExp("^" + QTY_STRING + "$");
   var POWER_OP = "\\^|\\*{2}";
-  var TOP_REGEX = new RegExp ("([^ \\*]+?)(?:" + POWER_OP + ")?(-?\\d+)");
-  var BOTTOM_REGEX = new RegExp("([^ \\*]+?)(?:" + POWER_OP + ")?(\\d+)");
+  var TOP_REGEX = new RegExp ("([^ \\*]+?)(?:" + POWER_OP + ")?(-?\\d+(?![a-zA-Z]))");
+  var BOTTOM_REGEX = new RegExp("([^ \\*]+?)(?:" + POWER_OP + ")?(\\d+(?![a-zA-Z]))");
 
-  var SIGNATURE_VECTOR = ["length", "time", "temperature", "mass", "current", "substance", "luminosity", "currency", "memory", "angle", "capacitance"];
+  var SIGNATURE_VECTOR = ["length", "time", "temperature", "mass", "current", "substance", "luminosity", "currency", "information", "angle", "capacitance"];
   var KINDS = {
     "-312058": "resistance",
     "-312038": "inductance",
@@ -337,7 +343,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     "63999998": "illuminance",
     "64000000": "luminous_power",
     "1280000000": "currency",
-    "25600000000": "memory",
+    "25600000000": "information",
+    "25599999980": "information_rate",
     "511999999980": "angular_velocity",
     "512000000000": "angle",
     "10240000000000": "capacitance"
@@ -476,10 +483,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
    * @returns {string[]} names of kinds of units
    */
   Qty.getKinds = function() {
-    var knownKinds = Object.keys(KINDS).map(function(knownSignature) {
+    return uniq(Object.keys(KINDS).map(function(knownSignature) {
       return KINDS[knownSignature];
-    }).sort();
-    return knownKinds;
+    }));
   };
 
   /**
@@ -1675,6 +1681,21 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
    */
   function identity(value) {
     return value;
+  }
+
+  /**
+   * Returns unique strings from list
+   *
+   * @param {string[]} array of strings
+   *
+   *
+   * @returns {string[]} a new array of strings without duplicates
+   */
+  function uniq(strings) {
+    var seen = {};
+    return strings.filter(function(item) {
+      return seen.hasOwnProperty(item) ? false : (seen[item] = true);
+    });
   }
 
   /**
